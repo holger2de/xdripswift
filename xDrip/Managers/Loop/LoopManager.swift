@@ -54,6 +54,7 @@ struct XDripCGMMetadataEnvelope: Codable, Equatable {
     struct Transmitter: Codable, Equatable {
         let identifier: String?
         let model: String?
+        let isAnubis: Bool?
         let battery: Battery?
     }
 
@@ -249,8 +250,14 @@ enum XDripCGMMetadataBuilder {
         let transmitterMetadata: XDripCGMMetadataEnvelope.Transmitter? = {
             let identifier = defaults.activeSensorTransmitterId
             let transmitterModel = transmitterType?.detailedDescription()
-            guard identifier != nil || transmitterModel != nil || battery != nil else { return nil }
-            return .init(identifier: identifier, model: transmitterModel, battery: battery)
+            let isAnubis = context.transmitter.map { $0.isAnubisG6() }
+            guard identifier != nil || transmitterModel != nil || isAnubis != nil || battery != nil else { return nil }
+            return .init(
+                identifier: identifier,
+                model: transmitterModel,
+                isAnubis: isAnubis,
+                battery: battery
+            )
         }()
 
         return XDripCGMMetadataEnvelope(
