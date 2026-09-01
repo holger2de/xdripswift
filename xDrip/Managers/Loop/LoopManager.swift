@@ -609,12 +609,10 @@ public class LoopManager: NSObject {
         sharedUserDefaults.set(data, forKey: "latestReadings")
         trace("    in share, stored readings for selected OS-AID target", log: log, category: ConstantsLog.categoryLoopManager, type: .debug, troubleshooting: .detailed(.integration(name: .osAid, activity: .succeeded(itemCount: dictionary.count))))
 
-        if loopShareType == .trio {
-            publishMetadata(
-                sharedUserDefaults: sharedUserDefaults,
-                latestSharedGlucoseAt: sharedGlucoseDate(from: dictionary.first)
-            )
-        }
+        publishMetadata(
+            sharedUserDefaults: sharedUserDefaults,
+            latestSharedGlucoseAt: sharedGlucoseDate(from: dictionary.first)
+        )
 
         // mirror exactly what we wrote so local deletions are reflected immediately
         UserDefaults.standard.readingsStoredInSharedUserDefaultsAsDictionary = dictionary
@@ -667,7 +665,7 @@ public class LoopManager: NSObject {
         clearSensorState: Bool = false
     ) {
         guard !Bundle.main.disableLoopShare,
-              UserDefaults.standard.loopShareType == .trio
+              UserDefaults.standard.loopShareType != .disabled
         else { return }
 
         if let lastCommunicationAt {
