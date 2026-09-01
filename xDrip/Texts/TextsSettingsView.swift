@@ -386,6 +386,18 @@ class Texts_SettingsView {
     static let allowScreenRotation: String = {
         return NSLocalizedString("settingsviews_allowScreenRotation", tableName: filename, bundle: Bundle.main, value: "Chart Rotation", comment: "home screen settings, should the main glucose chart screen be allowed")
     }()
+
+    static let landscapeViewStyle: String = {
+        return NSLocalizedString("settingsviews_landscapeViewStyle", tableName: filename, bundle: Bundle.main, value: "Landscape View", comment: "home screen settings, choose landscape presentation style")
+    }()
+
+    static let landscapeViewClassic: String = {
+        return NSLocalizedString("settingsviews_landscapeViewClassic", tableName: filename, bundle: Bundle.main, value: "Classic", comment: "classic landscape chart presentation")
+    }()
+
+    static let landscapeViewComparison: String = {
+        return NSLocalizedString("settingsviews_landscapeViewComparison", tableName: filename, bundle: Bundle.main, value: "Comparison", comment: "AGP comparison landscape presentation")
+    }()
     
     static let showMiniChart: String = {
         return NSLocalizedString("settingsviews_showMiniChart", tableName: filename, bundle: Bundle.main, value: "Show Mini-Chart", comment: "home screen settings, should the mini-chart be shown")

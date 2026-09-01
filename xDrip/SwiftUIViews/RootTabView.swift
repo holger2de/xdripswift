@@ -921,6 +921,35 @@ private struct RootHomeLandscapeView: View {
 
 /// Owns the landscape chart state for the lifetime of one landscape presentation.
 private struct RootHomeLandscapeChartView: View {
+    let coreDataManager: CoreDataManager
+    let nightscoutSyncManager: NightscoutSyncManager
+
+    @AppStorage("landscapeViewStyle")
+    private var landscapeViewStyleRaw = LandscapeViewStyle.comparison.rawValue
+
+    init(coreDataManager: CoreDataManager, nightscoutSyncManager: NightscoutSyncManager) {
+        self.coreDataManager = coreDataManager
+        self.nightscoutSyncManager = nightscoutSyncManager
+    }
+
+    var body: some View {
+        switch LandscapeViewStyle(rawValue: landscapeViewStyleRaw) ?? .comparison {
+        case .comparison:
+            RootHomeComparisonLandscapeChartView(
+                coreDataManager: coreDataManager,
+                nightscoutSyncManager: nightscoutSyncManager
+            )
+
+        case .classic:
+            RootHomeClassicLandscapeChartView(
+                coreDataManager: coreDataManager,
+                nightscoutSyncManager: nightscoutSyncManager
+            )
+        }
+    }
+}
+
+private struct RootHomeComparisonLandscapeChartView: View {
     @StateObject private var stateModel: LandscapeChartStateModel
 
     init(coreDataManager: CoreDataManager, nightscoutSyncManager: NightscoutSyncManager) {
@@ -932,6 +961,21 @@ private struct RootHomeLandscapeChartView: View {
 
     var body: some View {
         LandscapeChartView(stateModel: stateModel)
+    }
+}
+
+private struct RootHomeClassicLandscapeChartView: View {
+    @StateObject private var stateModel: ClassicLandscapeChartStateModel
+
+    init(coreDataManager: CoreDataManager, nightscoutSyncManager: NightscoutSyncManager) {
+        _stateModel = StateObject(wrappedValue: ClassicLandscapeChartStateModel(
+            coreDataManager: coreDataManager,
+            nightscoutSyncManager: nightscoutSyncManager
+        ))
+    }
+
+    var body: some View {
+        ClassicLandscapeChartView(stateModel: stateModel)
     }
 }
 

@@ -48,6 +48,9 @@ fileprivate enum Setting:Int, CaseIterable {
 
     // visible number of hours on the main Home chart
     case mainChartHours = 12
+
+    // choose between modern comparison and classic landscape chart
+    case landscapeViewStyle = 13
     
 }
 
@@ -127,8 +130,32 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
             nativeSettingsRow(id: "homeScreen.showMiniChart", index: Setting.showMiniChart.rawValue, sectionID: sectionID)
         ]
 
+        var landscapeViewStyleRow = nativeSettingsRow(
+            id: "homeScreen.landscapeViewStyle",
+            index: Setting.landscapeViewStyle.rawValue,
+            sectionID: sectionID
+        )
+
+        landscapeViewStyleRow.accessory = .none
+        landscapeViewStyleRow.control = .menu(
+            options: {
+                LandscapeViewStyle.allCases.map {
+                    SettingsMenuOption(
+                        title: $0.title,
+                        isSelected: $0 == UserDefaults.standard.landscapeViewStyle
+                    )
+                }
+            },
+            selectOption: { index in
+                let styles = LandscapeViewStyle.allCases
+                guard styles.indices.contains(index) else { return }
+                UserDefaults.standard.landscapeViewStyle = styles[index]
+            }
+        )
+
         let screenLockRows = [
             nativeSettingsRow(id: "homeScreen.allowScreenRotation", index: Setting.allowScreenRotation.rawValue, sectionID: sectionID),
+            landscapeViewStyleRow,
             nativeSettingsRow(id: "homeScreen.showClockWhenScreenIsLocked", index: Setting.showClockWhenScreenIsLocked.rawValue, sectionID: sectionID),
             screenLockDimmingRow
         ]
@@ -199,7 +226,7 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
                 isOn: { UserDefaults.standard.preferSensorCountdown },
                 setIsOn: { UserDefaults.standard.preferSensorCountdown = $0 }
             )
-        case .screenLockDimmingType, .mainChartHours, .urgentHighMarkValue, .highMarkValue, .targetMarkValue, .lowMarkValue, .urgentLowMarkValue:
+        case .screenLockDimmingType, .mainChartHours, .landscapeViewStyle, .urgentHighMarkValue, .highMarkValue, .targetMarkValue, .lowMarkValue, .urgentLowMarkValue:
             return nil
         }
     }
@@ -329,8 +356,8 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
                 UserDefaults.standard.preferSensorCountdown.toggle()
             })
 
-        case .mainChartHours:
-            // The native SwiftUI menu handles this row directly.
+        case .mainChartHours, .landscapeViewStyle:
+            // The native SwiftUI menu handles these rows directly.
             return .nothing
         }
     }
@@ -409,6 +436,9 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
         case .mainChartHours:
             return Texts_SettingsView.mainChartHours
 
+        case .landscapeViewStyle:
+            return Texts_SettingsView.landscapeViewStyle
+
         case .preferSensorCountdown:
             return Texts_SettingsView.preferSensorCountdown
 
@@ -458,7 +488,7 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
         case .screenLockDimmingType, .urgentHighMarkValue, .highMarkValue, .lowMarkValue, .urgentLowMarkValue, .targetMarkValue:
             return SettingsAccessory.disclosure
             
-        case .allowScreenRotation, .showClockWhenScreenIsLocked, .showMiniChart, .showOriginalBGReadings, .showSensorNoise, .preferSensorCountdown, .mainChartHours:
+        case .allowScreenRotation, .showClockWhenScreenIsLocked, .showMiniChart, .showOriginalBGReadings, .showSensorNoise, .preferSensorCountdown, .mainChartHours, .landscapeViewStyle:
             return SettingsAccessory.none
             
         }
@@ -487,7 +517,7 @@ class SettingsViewHomeScreenSettingsViewModel: NSObject, SettingsViewModelProtoc
         case .screenLockDimmingType:
             return UserDefaults.standard.screenLockDimmingType.description
             
-        case .allowScreenRotation, .showClockWhenScreenIsLocked, .showMiniChart, .showOriginalBGReadings, .showSensorNoise, .preferSensorCountdown, .mainChartHours:
+        case .allowScreenRotation, .showClockWhenScreenIsLocked, .showMiniChart, .showOriginalBGReadings, .showSensorNoise, .preferSensorCountdown, .mainChartHours, .landscapeViewStyle:
             return nil
             
         }

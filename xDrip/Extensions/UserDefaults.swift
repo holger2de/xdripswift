@@ -17,6 +17,20 @@ enum AutomaticBasalRenderingStyle: Int, CaseIterable {
     }
 }
 
+enum LandscapeViewStyle: Int, CaseIterable {
+    case comparison = 0
+    case classic = 1
+
+    var title: String {
+        switch self {
+        case .comparison:
+            return Texts_SettingsView.landscapeViewComparison
+        case .classic:
+            return Texts_SettingsView.landscapeViewClassic
+        }
+    }
+}
+
 extension UserDefaults {
 
     /// shared user defaults
@@ -155,6 +169,8 @@ extension UserDefaults {
         case allowScreenRotation = "allowScreenRotation"
         /// number of preceding days used by the landscape AGP comparison
         case landscapeComparisonDays = "landscapeComparisonDays"
+        /// selected iPhone landscape presentation style
+        case landscapeViewStyle = "landscapeViewStyle"
         /// should the clock view be shown when the screen is locked?
         case showClockWhenScreenIsLocked = "showClockWhenScreenIsLocked"
         /// how (and if) the screen should be dimmed when screen lock is enabled
@@ -1468,6 +1484,16 @@ extension UserDefaults {
         set {
             let validatedValue = [3, 7, 30, 60, 90].contains(newValue) ? newValue : 7
             set(validatedValue, forKey: Key.landscapeComparisonDays.rawValue)
+        }
+    }
+
+    /// selected iPhone landscape presentation style
+    var landscapeViewStyle: LandscapeViewStyle {
+        get {
+            LandscapeViewStyle(rawValue: integer(forKey: Key.landscapeViewStyle.rawValue)) ?? .comparison
+        }
+        set {
+            set(newValue.rawValue, forKey: Key.landscapeViewStyle.rawValue)
         }
     }
 
