@@ -949,13 +949,15 @@ private struct RootHomeLandscapeView: View {
 private struct RootHomeLandscapeChartView: View {
     let coreDataManager: CoreDataManager
     let nightscoutSyncManager: NightscoutSyncManager
+    let refreshRevision: Int
 
     @AppStorage("landscapeViewStyle")
     private var landscapeViewStyleRaw = LandscapeViewStyle.comparison.rawValue
 
-    init(coreDataManager: CoreDataManager, nightscoutSyncManager: NightscoutSyncManager) {
+    init(coreDataManager: CoreDataManager, nightscoutSyncManager: NightscoutSyncManager, refreshRevision: Int) {
         self.coreDataManager = coreDataManager
         self.nightscoutSyncManager = nightscoutSyncManager
+        self.refreshRevision = refreshRevision
     }
 
     var body: some View {
@@ -963,7 +965,8 @@ private struct RootHomeLandscapeChartView: View {
         case .comparison:
             RootHomeComparisonLandscapeChartView(
                 coreDataManager: coreDataManager,
-                nightscoutSyncManager: nightscoutSyncManager
+                nightscoutSyncManager: nightscoutSyncManager,
+                refreshRevision: refreshRevision
             )
 
         case .classic:

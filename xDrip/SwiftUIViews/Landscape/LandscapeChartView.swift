@@ -1014,6 +1014,7 @@ private struct LandscapeTIRBadge: View {
 ///
 /// The same chart and statistics managers remain alive while the user moves between days, avoiding
 /// a new data stack for each SwiftUI body update.
+@MainActor
 final class ClassicLandscapeChartStateModel: ObservableObject {
 
     // MARK: - TIR Data Structure
