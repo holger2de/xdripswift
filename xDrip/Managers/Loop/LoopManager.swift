@@ -99,6 +99,7 @@ enum XDripCGMMetadataBuilder {
         let expectedInterval = defaults.isMaster ? directExpectedInterval(transmitterType) : followerExpectedInterval(defaults.followerDataSourceType)
         let startDate = context.activeSensor?.startDate ?? defaults.activeSensorStartDate
         let model = defaults.activeSensorDescription ?? transmitterType?.detailedDescription()
+        let isAnubis = defaults.isMaster && context.transmitter?.isAnubisG6() == true
         let maxAgeInDays = context.transmitter?.maxSensorAgeInDays() ?? defaults.activeSensorMaxSensorAgeInDays
         let warmupEnd = startDate.map { $0.addingTimeInterval(warmupDuration(transmitter: context.transmitter, defaults: defaults)) }
 
@@ -196,7 +197,7 @@ enum XDripCGMMetadataBuilder {
             switch batteryInfo {
             case let .percentage(percentage):
                 return .init(value: Double(percentage), representation: "percentage", unit: "percent", observedAt: nil)
-            case let .DexcomG5(_, voltageB, _, _, _):
+            case let .dexcom(_, _, voltageB, _, _, _):
                 return .init(
                     value: Double(voltageB * 10),
                     representation: "voltage",
@@ -235,7 +236,8 @@ enum XDripCGMMetadataBuilder {
                 sessionIdentifier: sessionIdentifier,
                 state: state,
                 type: sensorType,
-                model: model,
+                // Trio uses this description as well as transmitter.model. Keep the session identity unchanged.
+                model: isAnubis ? DexcomProductNameResolver.anubisTitle : model,
                 serialNumber: defaults.activeSensorSerialNumber,
                 startedAt: startDate?.timeIntervalSince1970,
                 warmupEndsAt: warmupEnd?.timeIntervalSince1970,
@@ -248,10 +250,19 @@ enum XDripCGMMetadataBuilder {
             return .init(glucoseAt: latestSharedGlucoseAt?.timeIntervalSince1970, qualityCode: qualityCode)
         }()
         let transmitterMetadata: XDripCGMMetadataEnvelope.Transmitter? = {
+            // The saved identifier can still belong to a previous local transmitter.
+            // Keep it for reconnection, but never attach it to follower data or a removed
+            // transmitter. This only omits optional metadata; legacy readings are unchanged.
+            guard defaults.isMaster, context.transmitter != nil else { return nil }
             let identifier = defaults.activeSensorTransmitterId
-            let transmitterModel = transmitterType?.detailedDescription()
-            let isAnubis = context.transmitter.map { $0.isAnubisG6() }
-            guard identifier != nil || transmitterModel != nil || isAnubis != nil || battery != nil else { return nil }
+            let transmitterModel = isAnubis
+                ? DexcomProductNameResolver.anubisTitle
+                : transmitterType?.detailedDescription()
+
+            guard identifier != nil || transmitterModel != nil || battery != nil else {
+                return nil
+            }
+
             return .init(
                 identifier: identifier,
                 model: transmitterModel,
@@ -428,7 +439,7 @@ public class LoopManager: NSObject {
         guard UserDefaults.standard.loopShareType != .disabled else { return }
 
         // Apply the active source policy before reading or writing the shared app group. Direct
-        // Medtrum Nano is always blocked; EasyView retains its explicit consent requirement.
+        // Medtrum Nano is always blocked. EasyView retains its explicit consent requirement.
         guard Self.osAidSharingPermitted else {
             glucoseData.removeAll()
             clearBlockedSourceSharedData()
